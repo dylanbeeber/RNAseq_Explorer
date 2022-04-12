@@ -2,6 +2,7 @@ library(shiny)
 library(ggplot2)
 library(colourpicker)
 library(DT)
+library(bigPint)
 
 
 ui <- fluidPage(
