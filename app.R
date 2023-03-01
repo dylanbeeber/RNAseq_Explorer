@@ -18,7 +18,7 @@ ui <- fluidPage(
         selectInput("dataset", "Data Set",
                     c("Choose one" = "",
                       "Soybean" = "se_soybean_cn_sub")),
-        submitButton(text = "Submit", width = '100%'),
+        submitButton(text = "Select", width = '100%'),
         p(),
         downloadButton("DL_counts", label = "Download Counts Data", width = '100%'),
         p(),
@@ -30,10 +30,11 @@ ui <- fluidPage(
     ),
     tabPanel("Counts Explorer",
       sidebarPanel(
-        fileInput("counts_data",
-          label = "Load Counts Matrix",
-          multiple = FALSE,
-          accept = ".csv"),
+        # Remove file input for now, as data source is determined by first tab
+        #fileInput("counts_data",
+          #label = "Load Counts Matrix",
+          #multiple = FALSE,
+          #accept = ".csv"),
         p("Filter gene based on percentile of variance:"),
         sliderInput("counts_filter", "Counts Filter",
                     min = 0, max = 1, value = .5),
@@ -88,10 +89,11 @@ ui <- fluidPage(
     ),
     tabPanel("Differential Expression",
       sidebarPanel(
-        fileInput("de_data",
-          label = "Load Differential Expression Matrix",
-          multiple = FALSE,
-          accept = ".csv"),
+        # Remove file input for now, as data source is determined by first tab
+        #fileInput("de_data",
+          #label = "Load Differential Expression Matrix",
+          #multiple = FALSE,
+          #accept = ".csv"),
         p("First select a comparison:"),
         selectInput("comp_select", "Comparison",
                     c("Early vs. Middle" = "S1_S2",
@@ -129,10 +131,12 @@ ui <- fluidPage(
       )
     ),
     tabPanel("Single Gene Visualization",
-      sidebarPanel(fileInput("sg_counts_data",
-                             label = "Load Counts Matrix",
-                             multiple = FALSE,
-                             accept = ".csv"),
+      sidebarPanel(
+        # Remove file input for now, as data source is determined by first tab
+        #fileInput("sg_counts_data",
+                  #label = "Load Counts Matrix",
+                  #multiple = FALSE,
+                  #accept = ".csv"),
         uiOutput("moreControls"),
         selectInput("plot_type", "Plot Type",
                     c("Bar Plot" = "bar_plot",
@@ -214,10 +218,9 @@ server <- function(input, output) {
   # Load counts data
   load_counts_data <- reactive({
     validate(
-      need(input$counts_data, "\nPlease input a .csv file"),
+      need(input$dataset, "\nPlease select dataset in first tab"),
     )
-    counts_data <- input$counts_data
-    return(read.csv(counts_data$datapath))
+    return(read.csv(paste("data/", input$dataset, "_counts.csv",  sep = "", collapse = "")))
   })
   
   # Function to remove genes with certain number of rows less than one
@@ -268,7 +271,7 @@ server <- function(input, output) {
   
   # Create a table of filtered summary results
   output$filtered_table <- renderTable({validate(
-                                        need(input$counts_data, "\nPlease input a .csv file"))
+                                        need(input$dataset, "\nPlease select a dataset in first tab"))
                                         filter_table_results(load_counts_data(),
                                                              input$counts_filter,
                                                              input$num_samples)})
@@ -367,10 +370,9 @@ server <- function(input, output) {
   # Load de data
   load_de_data <- reactive({
     validate(
-      need(input$de_data, "\nPlease input a .csv file"),
+      need(input$dataset, "\nPlease select dataset in first tab"),
     )
-    de_data <- input$de_data
-    return(read.csv(de_data$datapath))
+    return(read.csv(paste("data/", input$dataset, "_de.csv",  sep = "", collapse = "")))
   })
   
   # Subset de data based on dropdown menu
@@ -430,16 +432,15 @@ server <- function(input, output) {
   # Load sg counts data
   load_sg_counts_data <- reactive({
     validate(
-      need(input$sg_counts_data, "\nPlease input a .csv file"),
+      need(input$dataset, "\nPlease select a dataset in first tab"),
     )
-    sg_counts_data <- input$sg_counts_data
-    return(read.csv(sg_counts_data$datapath))
+    return(read.csv(paste("data/", input$dataset, "_counts.csv",  sep = "", collapse = "")))
   })
   
   # Add UI Element
   output$moreControls <- renderUI({
     validate(
-      need(input$sg_counts_data, "")
+      need(input$dataset, "")
     )
     selectInput("gene", "Select a gene of interest",
                 choices = load_sg_counts_data()[1])
@@ -505,6 +506,8 @@ server <- function(input, output) {
                                                       input$gene,
                                                       input$plot_type)
   })
+  
+  output$text <- renderText(input$dataset)
 }
 
 # Run the application
