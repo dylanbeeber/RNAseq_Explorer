@@ -272,9 +272,15 @@ server <- function(input, output) {
   # Create a table of filtered summary results
   output$filtered_table <- renderTable({validate(
                                         need(input$dataset, "\nPlease select a dataset in first tab"))
-                                        filter_table_results(load_counts_data(),
+                                        progress <- shiny::Progress$new()
+                                        on.exit(progress$close())
+                                        progress$set(message = "Creating Table", value = 3)
+                                        filtered_table_output <- filter_table_results(load_counts_data(),
                                                              input$counts_filter,
-                                                             input$num_samples)})
+                                                             input$num_samples)
+                                        progress$set(message = "Creating Table", value = 10)
+                                        filtered_table_output
+                                        })
   
   # Create scatter plot
   create_mean_var_scatter <- function(data, percentile, n_samples) {
@@ -305,9 +311,14 @@ server <- function(input, output) {
   }
   
   # Create a scatter plot
-  output$mean_var_scatter <- renderPlot({create_mean_var_scatter(load_counts_data(),
+  output$mean_var_scatter <- renderPlot({progress <- shiny::Progress$new()
+                                         on.exit(progress$close())
+                                         progress$set(message = "Creating Plot", value = 3)
+                                         mvs_plot <- create_mean_var_scatter(load_counts_data(),
                                                                input$counts_filter,
-                                                               input$num_samples)})
+                                                               input$num_samples)
+                                         progress$set(message = "Creating Plot", value = 10)
+                                         mvs_plot})
   
   # Function for creating a heatmap
   create_heatmap <- function(data, percentile, n_samples) {
@@ -324,9 +335,14 @@ server <- function(input, output) {
   }
   
   # Create the heatmap
-  output$heatmap <- renderPlot({create_heatmap(load_counts_data(),
+  output$heatmap <- renderPlot({progress <- shiny::Progress$new()
+                                on.exit(progress$close())
+                                progress$set(message = "Creating Plot", value = 3)
+                                heatmap <- create_heatmap(load_counts_data(),
                                                input$counts_filter,
-                                               input$num_samples)})
+                                               input$num_samples)
+                                progress$set(message = "Creating Plot", value = 10)
+                                heatmap})
   
   # Create principal analysis plot
   plot_pca <- function(data, percentile, n_samples, x_axis, y_axis) {
@@ -357,11 +373,17 @@ server <- function(input, output) {
     p
   }
   
-  output$pca_plot <- renderPlot({plot_pca(load_counts_data(),
+  output$pca_plot <- renderPlot({progress <- shiny::Progress$new()
+                                 on.exit(progress$close())
+                                 progress$set(message = "Creating Plot", value = 3)
+                                 pca <- plot_pca(load_counts_data(),
                                           input$counts_filter,
                                           input$num_samples,
                                           input$x_axis,
-                                          input$y_axis)})
+                                          input$y_axis)
+                                 progress$set(message = "Creating Plot", value = 10)
+                                 pca
+                                 })
   
   
   
@@ -398,9 +420,14 @@ server <- function(input, output) {
     df
   }
   
-  output$filtered_de_data <- DT::renderDataTable({draw_table(load_de_data(),
+  output$filtered_de_data <- DT::renderDataTable({progress <- shiny::Progress$new()
+                                                  on.exit(progress$close())
+                                                  progress$set(message = "Creating Table", value = 3)
+                                                  de_table <- draw_table(load_de_data(),
                                                             input$slider,
-                                                            input$comp_select)})
+                                                            input$comp_select)
+                                                  progress$set(message = "Creating Table", value = 10)
+                                                  de_table})
   
   # Create the volcano plot
   volcano_plot <-
@@ -422,10 +449,15 @@ server <- function(input, output) {
     }
   
   # Return volcano plot output
-  output$volcano_plot <- renderPlot({volcano_plot(load_de_data(),
+  output$volcano_plot <- renderPlot({progress <- shiny::Progress$new()
+                                     on.exit(progress$close())
+                                     progress$set(message = "Creating Plot", value = 3)
+                                     volc_plot <- volcano_plot(load_de_data(),
                                              input$x_name, input$y_name,
                                              input$slider, input$highlight,
-                                             input$base, input$comp_select)})
+                                             input$base, input$comp_select)
+                                     progress$set(message = "Creating Plot", value = 10)
+                                     volc_plot})
   
   
   
@@ -502,10 +534,15 @@ server <- function(input, output) {
   }
   
   # Output plot for single gene examination
-  output$single_gene_plot <- renderPlot({plot_se_data(load_sg_counts_data(),
+  output$single_gene_plot <- renderPlot({progress <- shiny::Progress$new()
+                                         on.exit(progress$close())
+                                         progress$set(message = "Creating Plot", value = 3)
+                                         se_plot <- plot_se_data(load_sg_counts_data(),
                                                       input$gene,
                                                       input$plot_type)
-  })
+                                         progress$set(message = "Creating Plot", value = 10)
+                                         se_plot
+                                         })
   
   output$text <- renderText(input$dataset)
 }
