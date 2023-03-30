@@ -24,7 +24,7 @@ ui <- fluidPage(
         p(),
         downloadButton("DL_DE", label = "Download DE Data", width = '100%'),
       width = 3),
-      mainPanel(
+      mainPanel("Sample Metadata",
         DT::dataTableOutput("metadata_table")
       )
     ),
@@ -174,7 +174,18 @@ server <- function(input, output) {
   }
   
   # Metadata table output
-  output$metadata_table <- DT::renderDataTable({load_sample_data()}, rownames=FALSE)
+  output$metadata_table <- DT::renderDataTable(DT::datatable({load_sample_data()},
+                                                             extensions = 'Buttons',
+                                                             options = list(
+                                                               paging = TRUE,
+                                                               searching = TRUE,
+                                                               fixedColumns = TRUE,
+                                                               autoWidth = TRUE,
+                                                               ordering = TRUE,
+                                                               dom = 'tB',
+                                                               buttons = c('csv')
+                                                             ),
+                                                             ), rownames=FALSE)
   
   # Download counts data
   output$DL_counts <- downloadHandler(
